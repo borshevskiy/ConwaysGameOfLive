@@ -14,13 +14,10 @@ class GameView(context: Context?, attrs: AttributeSet?) : SurfaceView(context, a
     private var isRunning = false
     private var columns = 0
     private var rows = 0
+    private var isInitialized = false
     private lateinit var gameField: GameField
     private val rect by lazy { Rect() }
     private val paint by lazy { Paint() }
-
-    init {
-        initWorld()
-    }
 
     override fun run() {
         while (isRunning) {
@@ -30,6 +27,10 @@ class GameView(context: Context?, attrs: AttributeSet?) : SurfaceView(context, a
             } catch (e: InterruptedException) {
             }
             with(holder.lockCanvas()) {
+                if (!isInitialized) {
+                    initWorld()
+                    isInitialized = true
+                }
                 gameField.generateLifecycle()
                 drawCells(this)
                 holder.unlockCanvasAndPost(this)
@@ -40,13 +41,14 @@ class GameView(context: Context?, attrs: AttributeSet?) : SurfaceView(context, a
     fun start() {
         isRunning = true
         thread = Thread(this)
-        thread!!.start()
+        thread?.start()
     }
 
     fun randomize() {
         isRunning = false
+        isInitialized = true
         with(holder.lockCanvas()) {
-            gameField.generateLifecycle()
+            initWorld()
             drawCells(this)
             holder.unlockCanvasAndPost(this)
         }
